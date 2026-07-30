@@ -11,7 +11,11 @@ type FormState = {
   sessionRpe: string;
   sessionDurationMinutes: string;
   sleepHours: string;
+  sleepQuality: string;
   wellnessScore: string;
+  muscleSoreness: string;
+  mood: string;
+  stress: string;
 };
 
 type FormErrors = Partial<Record<keyof FormState | "_form", string[]>>;
@@ -27,7 +31,11 @@ function emptyForm(athleteId = ""): FormState {
     sessionRpe: "",
     sessionDurationMinutes: "",
     sleepHours: "",
+    sleepQuality: "",
     wellnessScore: "",
+    muscleSoreness: "",
+    mood: "",
+    stress: "",
   };
 }
 
@@ -74,7 +82,11 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
       }
     }
 
+    if (!form.sleepQuality) next.sleepQuality = ["Kualitas tidur wajib dipilih"];
     if (!form.wellnessScore) next.wellnessScore = ["Wellness score wajib dipilih"];
+    if (!form.muscleSoreness) next.muscleSoreness = ["Muscle soreness wajib dipilih"];
+    if (!form.mood) next.mood = ["Mood wajib dipilih"];
+    if (!form.stress) next.stress = ["Stress wajib dipilih"];
 
     return next;
   }
@@ -197,10 +209,49 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
         />
       </Field>
 
+      <Field label="Kualitas Tidur (1 = buruk, 5 = sangat baik)" error={errors.sleepQuality?.[0]}>
+        <ScalePicker
+          value={form.sleepQuality}
+          onChange={(value) => setForm((f) => ({ ...f, sleepQuality: value }))}
+          min={1}
+          max={5}
+        />
+      </Field>
+
       <Field label="Wellness Score (1 = buruk, 5 = sangat baik)" error={errors.wellnessScore?.[0]}>
         <ScalePicker
           value={form.wellnessScore}
           onChange={(value) => setForm((f) => ({ ...f, wellnessScore: value }))}
+          min={1}
+          max={5}
+        />
+      </Field>
+
+      <Field
+        label="Muscle Soreness / Nyeri Otot (1 = tidak nyeri, 5 = sangat nyeri)"
+        error={errors.muscleSoreness?.[0]}
+      >
+        <ScalePicker
+          value={form.muscleSoreness}
+          onChange={(value) => setForm((f) => ({ ...f, muscleSoreness: value }))}
+          min={1}
+          max={5}
+        />
+      </Field>
+
+      <Field label="Mood (1 = buruk, 5 = sangat baik)" error={errors.mood?.[0]}>
+        <ScalePicker
+          value={form.mood}
+          onChange={(value) => setForm((f) => ({ ...f, mood: value }))}
+          min={1}
+          max={5}
+        />
+      </Field>
+
+      <Field label="Stress (1 = sangat stress, 5 = sangat tenang)" error={errors.stress?.[0]}>
+        <ScalePicker
+          value={form.stress}
+          onChange={(value) => setForm((f) => ({ ...f, stress: value }))}
           min={1}
           max={5}
         />

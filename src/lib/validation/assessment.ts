@@ -12,6 +12,17 @@ function numericField(requiredMessage: string) {
   return z.string({ error: requiredMessage }).min(1, requiredMessage);
 }
 
+function scaleField(requiredMessage: string, rangeMessage: string) {
+  return numericField(requiredMessage).transform((val, ctx) => {
+    const num = Number(val);
+    if (!Number.isInteger(num) || num < 1 || num > 5) {
+      ctx.addIssue({ code: "custom", message: rangeMessage });
+      return z.NEVER;
+    }
+    return num;
+  });
+}
+
 export const dailyAssessmentSchema = z.object({
   athleteId: numericField("Atlet wajib dipilih").transform((val, ctx) => {
     const num = Number(val);
@@ -61,14 +72,17 @@ export const dailyAssessmentSchema = z.object({
     }
     return num;
   }),
-  wellnessScore: numericField("Wellness score wajib dipilih").transform((val, ctx) => {
-    const num = Number(val);
-    if (!Number.isInteger(num) || num < 1 || num > 5) {
-      ctx.addIssue({ code: "custom", message: "Wellness score harus antara 1-5" });
-      return z.NEVER;
-    }
-    return num;
-  }),
+  sleepQuality: scaleField(
+    "Kualitas tidur wajib dipilih",
+    "Kualitas tidur harus antara 1-5"
+  ),
+  wellnessScore: scaleField("Wellness score wajib dipilih", "Wellness score harus antara 1-5"),
+  muscleSoreness: scaleField(
+    "Muscle soreness wajib dipilih",
+    "Muscle soreness harus antara 1-5"
+  ),
+  mood: scaleField("Mood wajib dipilih", "Mood harus antara 1-5"),
+  stress: scaleField("Stress wajib dipilih", "Stress harus antara 1-5"),
 });
 
 export type DailyAssessmentValues = z.infer<typeof dailyAssessmentSchema>;

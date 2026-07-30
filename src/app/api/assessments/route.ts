@@ -27,14 +27,22 @@ export async function POST(request: Request) {
     sessionRpe,
     sessionDurationMinutes,
     sleepHours,
+    sleepQuality,
     wellnessScore,
+    muscleSoreness,
+    mood,
+    stress,
   } = parsed.data;
 
   const entries: Array<{ type: string; value: number; unit: string }> = [
     { type: "session_rpe", value: sessionRpe, unit: "skala 1-10" },
     { type: "session_duration", value: sessionDurationMinutes, unit: "menit" },
     { type: "sleep_hours", value: sleepHours, unit: "jam" },
+    { type: "sleep_quality", value: sleepQuality, unit: "skala 1-5" },
     { type: "wellness_score", value: wellnessScore, unit: "skala 1-5" },
+    { type: "muscle_soreness", value: muscleSoreness, unit: "skala 1-5" },
+    { type: "mood", value: mood, unit: "skala 1-5" },
+    { type: "stress", value: stress, unit: "skala 1-5" },
   ];
 
   const client = await getPool().connect();

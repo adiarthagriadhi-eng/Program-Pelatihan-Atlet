@@ -145,8 +145,13 @@ export default async function DaftarAtletPage() {
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
               {athletes.map((athlete) => (
                 <tr key={athlete.id}>
-                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-50">
-                    {athlete.name}
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/atlet/${athlete.id}`}
+                      className="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {athlete.name}
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                     {athlete.sport_name}
