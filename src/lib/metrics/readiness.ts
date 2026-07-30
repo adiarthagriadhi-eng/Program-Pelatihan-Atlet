@@ -43,10 +43,10 @@ export async function calculateLatestReadiness(athleteId: number): Promise<Readi
     SELECT assessment_date, type, value
     FROM assessments
     WHERE athlete_id = $1
-      AND type = ANY($2::assessment_type[])
+      AND type IN ('sleep_quality', 'muscle_soreness', 'mood', 'stress')
     ORDER BY assessment_date DESC
     `,
-    [athleteId, REQUIRED_TYPES]
+    [athleteId]
   );
 
   const byDate = new Map<string, Record<string, number>>();
