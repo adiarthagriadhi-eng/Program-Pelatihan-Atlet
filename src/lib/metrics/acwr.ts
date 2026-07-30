@@ -71,9 +71,12 @@ export async function calculateAcwr(athleteId: number): Promise<AcwrResult> {
     return { status: "insufficient_data" };
   }
 
+  // Kolom DATE dari PostgreSQL selalu dibaca node-postgres sebagai UTC
+  // tengah malam, jadi cutoff-nya juga dihitung di UTC supaya batas
+  // 7/28 hari tidak bergeser tergantung timezone server.
   const acuteCutoff = new Date();
-  acuteCutoff.setHours(0, 0, 0, 0);
-  acuteCutoff.setDate(acuteCutoff.getDate() - (ACUTE_WINDOW_DAYS - 1));
+  acuteCutoff.setUTCHours(0, 0, 0, 0);
+  acuteCutoff.setUTCDate(acuteCutoff.getUTCDate() - (ACUTE_WINDOW_DAYS - 1));
 
   const dailyLoads = rows.map((row) => ({
     date: new Date(row.date),

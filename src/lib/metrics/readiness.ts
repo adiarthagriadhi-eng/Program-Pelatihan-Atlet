@@ -16,6 +16,17 @@ export type ReadinessResult =
     }
   | { status: "no_data" };
 
+// node-postgres mengembalikan kolom DATE sebagai objek Date, bukan string
+// -- perlu dinormalisasi ke string supaya bisa dipakai sebagai key Map
+// (dua objek Date untuk tanggal yang sama adalah instance berbeda, jadi
+// tidak akan pernah dianggap "sama" kalau dipakai langsung sebagai key).
+function toDateKey(value: string | Date): string {
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+  return value;
+}
+
 /**
  * Readiness score = rata-rata dari sleep_quality, muscle_soreness
  * (dibalik: 6 - nilai, karena skalanya 1=tidak nyeri .. 5=sangat nyeri),
@@ -24,7 +35,7 @@ export type ReadinessResult =
  */
 export async function calculateLatestReadiness(athleteId: number): Promise<ReadinessResult> {
   const { rows } = await getPool().query<{
-    assessment_date: string;
+    assessment_date: string | Date;
     type: string;
     value: string;
   }>(
@@ -40,9 +51,10 @@ export async function calculateLatestReadiness(athleteId: number): Promise<Readi
 
   const byDate = new Map<string, Record<string, number>>();
   for (const row of rows) {
-    const entry = byDate.get(row.assessment_date) ?? {};
+    const dateKey = toDateKey(row.assessment_date);
+    const entry = byDate.get(dateKey) ?? {};
     entry[row.type] = Number(row.value);
-    byDate.set(row.assessment_date, entry);
+    byDate.set(dateKey, entry);
   }
 
   for (const [date, values] of byDate) {
