@@ -1,7 +1,6 @@
 import { Pool } from "pg";
 
 declare global {
-  // eslint-disable-next-line no-var
   var pgPool: Pool | undefined;
 }
 
@@ -17,6 +16,7 @@ function createPool() {
   return new Pool({
     connectionString,
     ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
+    connectionTimeoutMillis: 10_000,
   });
 }
 
