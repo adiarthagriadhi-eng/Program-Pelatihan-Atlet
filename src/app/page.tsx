@@ -26,6 +26,21 @@ export default function Home() {
           title="Daftar Atlet"
           description="Lihat semua atlet dan status ringkasnya."
         />
+        <MenuCard
+          href="/milestone/baru"
+          title="Tambah Milestone"
+          description="Catat target kompetisi, tes, transisi fase, atau PR."
+        />
+        <MenuCard
+          href="/milestone"
+          title="Daftar Milestone"
+          description="Semua milestone atlet, urut tanggal terdekat."
+        />
+        <MenuCard
+          href="/reminder"
+          title="Riwayat Reminder"
+          description="Audit reminder milestone yang sudah terkirim."
+        />
       </div>
     </main>
   );
