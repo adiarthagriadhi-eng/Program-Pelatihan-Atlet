@@ -21,6 +21,11 @@ export default function Home() {
           title="Input Assessment Harian"
           description="Isi cepat RPE, durasi sesi, jam tidur, dan wellness score."
         />
+        <MenuCard
+          href="/atlet"
+          title="Daftar Atlet"
+          description="Lihat semua atlet dan status ringkasnya."
+        />
       </div>
     </main>
   );
