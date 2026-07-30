@@ -15,7 +15,7 @@ CREATE TYPE revision_trigger AS ENUM ('auto_literature', 'auto_load_deviation', 
 CREATE TYPE revision_status AS ENUM ('pending_review', 'approved', 'rejected', 'edited_and_approved');
 CREATE TYPE reminder_channel AS ENUM ('email', 'whatsapp', 'push', 'sms');
 CREATE TYPE reminder_status AS ENUM ('scheduled', 'sent', 'failed');
-CREATE TYPE assessment_type AS ENUM ('session_rpe', 'resting_hr', 'sleep_hours', 'wellness_score', 'sport_specific_pr', 'hrv_optional', 'muscle_soreness', 'mood', 'stress');
+CREATE TYPE assessment_type AS ENUM ('session_rpe', 'session_duration', 'resting_hr', 'sleep_hours', 'wellness_score', 'sport_specific_pr', 'hrv_optional', 'muscle_soreness', 'mood', 'stress');
 
 -- ---------- ENTITAS INTI ----------
 

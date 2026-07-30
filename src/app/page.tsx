@@ -16,6 +16,11 @@ export default function Home() {
           title="Tambah Atlet Baru"
           description="Daftarkan atlet baru ke sistem."
         />
+        <MenuCard
+          href="/assessment/harian"
+          title="Input Assessment Harian"
+          description="Isi cepat RPE, durasi sesi, jam tidur, dan wellness score."
+        />
       </div>
     </main>
   );
