@@ -28,6 +28,21 @@ const ZONE_CLASSES: Record<string, string> = {
   risiko_tinggi: "border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-300",
 };
 
+const READINESS_ZONE_LABELS: Record<string, string> = {
+  aman: "Siap",
+  perhatian: "Perlu Perhatian",
+  risiko_tinggi: "Kurang Siap",
+};
+
+// Ambang belum ada rujukan baku (beda dari ACWR) -- ini angka yang
+// disepakati bersama pengguna aplikasi: >=4.0 hijau, 2.5-4.0 kuning,
+// <2.5 merah, dari skala 1-5.
+function readinessZoneFor(score: number): "aman" | "perhatian" | "risiko_tinggi" {
+  if (score >= 4) return "aman";
+  if (score >= 2.5) return "perhatian";
+  return "risiko_tinggi";
+}
+
 function formatDate(value: string | null): string {
   if (!value) return "-";
   const date = new Date(value);
@@ -185,14 +200,19 @@ function ReadinessCard({ result }: { result: ReadinessResult | null }) {
     );
   }
 
+  const zone = readinessZoneFor(result.score);
+  const zoneClass = ZONE_CLASSES[zone];
+  const zoneLabel = READINESS_ZONE_LABELS[zone];
+
   return (
-    <div className="rounded-lg border border-zinc-200 p-5 dark:border-zinc-800">
-      <h2 className="mb-1 font-medium text-zinc-900 dark:text-zinc-50">Readiness Score</h2>
-      <p className="mb-1 text-3xl font-semibold text-zinc-900 dark:text-zinc-50">
-        {result.score.toFixed(1)} <span className="text-base font-normal text-zinc-500">/ 5.0</span>
+    <div className={`rounded-lg border p-5 ${zoneClass}`}>
+      <h2 className="mb-1 font-medium">Readiness Score</h2>
+      <p className="mb-1 text-3xl font-semibold">
+        {result.score.toFixed(1)} <span className="text-base font-normal opacity-70">/ 5.0</span>
       </p>
-      <p className="mb-3 text-xs text-zinc-500">Data tanggal {formatDate(result.date)}</p>
-      <dl className="space-y-1 text-xs text-zinc-500">
+      <p className="mb-3 text-sm font-medium">{zoneLabel}</p>
+      <p className="mb-3 text-xs opacity-80">Data tanggal {formatDate(result.date)}</p>
+      <dl className="space-y-1 text-xs opacity-80">
         <div className="flex justify-between gap-4">
           <dt>Kualitas tidur</dt>
           <dd>{result.details.sleepQuality}</dd>
