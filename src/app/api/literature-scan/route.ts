@@ -211,9 +211,10 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     console.error("Gagal menjalankan literature scan:", error);
-    return NextResponse.json(
-      { status: "error", message: "Gagal menjalankan pemindaian literatur. Coba lagi." },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Gagal menjalankan pemindaian literatur. Coba lagi.";
+    return NextResponse.json({ status: "error", message }, { status: 500 });
   }
 }
