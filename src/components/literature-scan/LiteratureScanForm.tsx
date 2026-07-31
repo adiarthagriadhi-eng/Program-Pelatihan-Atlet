@@ -18,6 +18,7 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [findings, setFindings] = useState<Finding[] | null>(null);
+  const [draftedRevisionCount, setDraftedRevisionCount] = useState(0);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -44,7 +45,11 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
 
       // Saat server timeout (504), responsnya bukan JSON valid -- tangani
       // terpisah dari kegagalan koneksi supaya pesannya tidak menyesatkan.
-      let data: { message?: string; findings?: Finding[] } | null = null;
+      let data: {
+        message?: string;
+        findings?: Finding[];
+        draftedRevisionCount?: number;
+      } | null = null;
       try {
         data = await response.json();
       } catch {
@@ -63,6 +68,7 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
       }
 
       setFindings(data?.findings ?? []);
+      setDraftedRevisionCount(data?.draftedRevisionCount ?? 0);
     } catch {
       setError("Tidak bisa terhubung ke server. Periksa koneksi internet Anda.");
     } finally {
@@ -130,6 +136,13 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
               ? "Tidak ada temuan yang relevan."
               : `${findings.length} temuan tersimpan ke database:`}
           </h2>
+
+          {draftedRevisionCount > 0 && (
+            <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300">
+              {draftedRevisionCount} draft revisi otomatis dibuat di Review Revisi
+              berdasarkan temuan dengan relevansi tinggi -- menunggu persetujuan Anda.
+            </div>
+          )}
           {findings.map((finding, index) => (
             <div
               key={index}

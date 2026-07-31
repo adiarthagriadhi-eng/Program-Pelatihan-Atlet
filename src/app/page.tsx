@@ -46,6 +46,11 @@ export default function Home() {
           title="Literature Scanner"
           description="Cari temuan penelitian sport science terbaru & kredibel."
         />
+        <MenuCard
+          href="/revisi"
+          title="Review Revisi"
+          description="Tinjau & setujui usulan perubahan program dari temuan literatur."
+        />
       </div>
     </main>
   );
