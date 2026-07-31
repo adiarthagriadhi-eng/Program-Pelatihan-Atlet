@@ -129,11 +129,18 @@ export default async function ProfilAtletPage({
           <h1 className="mb-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
             {athlete.name}
           </h1>
-          <p className="mb-8 text-sm text-zinc-500">
+          <p className="mb-4 text-sm text-zinc-500">
             {athlete.sport_name} &middot; {athlete.sex ?? "-"} &middot;{" "}
             {calculateAge(athlete.birth_date)} &middot; Training age{" "}
             {athlete.training_age_years ? `${athlete.training_age_years} th` : "-"}
           </p>
+
+          <Link
+            href={`/atlet/${athlete.id}/program`}
+            className="mb-8 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            Editor Program &rarr;
+          </Link>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <AcwrCard result={acwrResult} />
