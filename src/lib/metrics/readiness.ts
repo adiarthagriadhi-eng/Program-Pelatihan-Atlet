@@ -2,6 +2,17 @@ import { getPool } from "@/lib/db";
 
 const REQUIRED_TYPES = ["sleep_quality", "muscle_soreness", "mood", "stress"] as const;
 
+export type ReadinessZone = "aman" | "perhatian" | "risiko_tinggi";
+
+// Ambang belum ada rujukan baku (beda dari ACWR) -- ini angka yang
+// disepakati bersama pengguna aplikasi: >=4.0 hijau, 2.5-4.0 kuning,
+// <2.5 merah, dari skala 1-5.
+export function readinessZoneFor(score: number): ReadinessZone {
+  if (score >= 4) return "aman";
+  if (score >= 2.5) return "perhatian";
+  return "risiko_tinggi";
+}
+
 export type ReadinessResult =
   | {
       status: "ok";

@@ -2,7 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPool } from "@/lib/db";
 import { calculateAcwr, type AcwrResult } from "@/lib/metrics/acwr";
-import { calculateLatestReadiness, type ReadinessResult } from "@/lib/metrics/readiness";
+import {
+  calculateLatestReadiness,
+  readinessZoneFor,
+  type ReadinessResult,
+} from "@/lib/metrics/readiness";
 
 export const dynamic = "force-dynamic";
 
@@ -33,15 +37,6 @@ const READINESS_ZONE_LABELS: Record<string, string> = {
   perhatian: "Perlu Perhatian",
   risiko_tinggi: "Kurang Siap",
 };
-
-// Ambang belum ada rujukan baku (beda dari ACWR) -- ini angka yang
-// disepakati bersama pengguna aplikasi: >=4.0 hijau, 2.5-4.0 kuning,
-// <2.5 merah, dari skala 1-5.
-function readinessZoneFor(score: number): "aman" | "perhatian" | "risiko_tinggi" {
-  if (score >= 4) return "aman";
-  if (score >= 2.5) return "perhatian";
-  return "risiko_tinggi";
-}
 
 function formatDate(value: string | null): string {
   if (!value) return "-";

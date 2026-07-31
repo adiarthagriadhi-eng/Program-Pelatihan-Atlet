@@ -12,6 +12,11 @@ export default function Home() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <MenuCard
+          href="/dashboard"
+          title="Dashboard Coach"
+          description="Status ACWR/readiness semua atlet & revisi pending, sekilas pandang."
+        />
+        <MenuCard
           href="/atlet/baru"
           title="Tambah Atlet Baru"
           description="Daftarkan atlet baru ke sistem."
