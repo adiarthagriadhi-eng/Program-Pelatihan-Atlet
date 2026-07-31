@@ -10,6 +10,7 @@
     "db:schema": "tsx scripts/run-schema.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "next": "16.2.12",
     "pg": "^8.22.0",
     "react": "19.2.4",

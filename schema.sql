@@ -125,6 +125,7 @@ CREATE TABLE literature_findings (
     source_url      TEXT,
     summary         TEXT,
     relevance_score NUMERIC(3,2),  -- 0.00 - 1.00
+    caution_note    TEXT,          -- catatan kehati-hatian (n kecil, desain lemah, dll)
     created_at      TIMESTAMPTZ DEFAULT now()
 );
 
