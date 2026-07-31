@@ -74,13 +74,20 @@ Kembalikan HANYA dalam format JSON berikut, tanpa teks tambahan apapun:
 }`;
 }
 
+// Dibandingkan lewat host + path saja (BUKAN full URL termasuk query
+// string/protocol). URL asli dari web_search sering membawa parameter
+// pelacakan (?utm_..., ?otool=, redirect wrapper, dst) yang beda dari
+// versi "bersih" yang ditulis ulang model -- membandingkan full URL
+// persis-sama membuat hasil pencarian yang SAH ikut terbuang. Path tetap
+// jadi jangkar anti-halusinasi: URL karangan biasanya punya path/ID yang
+// sama sekali berbeda (mis. ID PubMed acak), bukan cuma beda query
+// string, jadi tetap tertangkap dengan perbandingan ini.
 export function normalizeUrl(url: string): string {
   try {
     const parsed = new URL(url.trim());
-    parsed.hash = "";
-    let normalized = `${parsed.protocol}//${parsed.host}${parsed.pathname}${parsed.search}`;
-    if (normalized.endsWith("/")) normalized = normalized.slice(0, -1);
-    return normalized.toLowerCase();
+    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+    const path = parsed.pathname.toLowerCase().replace(/\/+$/, "");
+    return `${host}${path}`;
   } catch {
     return url.trim().toLowerCase();
   }
@@ -136,10 +143,13 @@ export function filterVerifiedFindings(
   verifiedUrls: Set<string>
 ): LiteratureFinding[] {
   return findings.filter((finding) => {
-    const isVerified = verifiedUrls.has(normalizeUrl(finding.source_url));
+    const normalized = normalizeUrl(finding.source_url);
+    const isVerified = verifiedUrls.has(normalized);
     if (!isVerified) {
       console.warn(
-        `[literature-scan] Membuang temuan dengan URL tak terverifikasi: "${finding.source_title}" -> ${finding.source_url}`
+        `[literature-scan] Membuang temuan dengan URL tak terverifikasi: "${finding.source_title}" -> ` +
+          `${finding.source_url} (dibandingkan sebagai "${normalized}", verifiedUrls: ` +
+          `${JSON.stringify(Array.from(verifiedUrls))})`
       );
     }
     return isVerified;
