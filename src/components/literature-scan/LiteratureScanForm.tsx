@@ -42,14 +42,27 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
         }),
       });
 
-      const data = await response.json();
+      // Saat server timeout (504), responsnya bukan JSON valid -- tangani
+      // terpisah dari kegagalan koneksi supaya pesannya tidak menyesatkan.
+      let data: { message?: string; findings?: Finding[] } | null = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
 
       if (!response.ok) {
-        setError(data.message ?? "Gagal menjalankan pemindaian literatur.");
+        if (response.status === 504) {
+          setError(
+            "Pencarian melebihi batas waktu server (60 detik). Coba topik yang lebih spesifik, atau coba lagi."
+          );
+        } else {
+          setError(data?.message ?? "Gagal menjalankan pemindaian literatur.");
+        }
         return;
       }
 
-      setFindings(data.findings ?? []);
+      setFindings(data?.findings ?? []);
     } catch {
       setError("Tidak bisa terhubung ke server. Periksa koneksi internet Anda.");
     } finally {

@@ -74,10 +74,13 @@ export async function scanLiterature(
     model: "claude-opus-5",
     max_tokens: 4096,
     system: buildSystemPrompt(topicTag, programContext),
-    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 8 }],
+    // Cakupan pencarian dibatasi supaya prosesnya konsisten di bawah 60
+    // detik (batas keras Vercel Hobby plan) -- lebih sedikit pencarian
+    // + effort lebih rendah, model tetap Opus.
+    tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 4 }],
     output_config: {
       format: zodOutputFormat(literatureScanOutputSchema),
-      effort: "medium",
+      effort: "low",
     },
     messages: [
       {
