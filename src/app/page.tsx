@@ -41,6 +41,11 @@ export default function Home() {
           title="Riwayat Reminder"
           description="Audit reminder milestone yang sudah terkirim."
         />
+        <MenuCard
+          href="/literature-scan"
+          title="Literature Scanner"
+          description="Cari temuan penelitian sport science terbaru & kredibel."
+        />
       </div>
     </main>
   );

@@ -5,6 +5,10 @@ import { literatureScanRequestSchema } from "@/lib/validation/literature-scan";
 
 const DEFAULT_CONTEXT = "Tidak ada konteks program spesifik.";
 
+// Web search + reasoning bisa makan waktu puluhan detik; perpanjang batas
+// waktu function di Vercel (default 10 detik terlalu singkat untuk ini).
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
 
