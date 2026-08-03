@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { PHASE_TYPES, PHASE_TYPE_LABELS, type PhaseType } from "@/lib/constants/phase";
+import { GUIDELINE_TOPICS, GUIDELINE_TOPIC_LABELS, guidelineTopicLabel } from "@/lib/constants/guideline-topic";
 
 export type GuidelineRow = {
   id: number;
@@ -15,6 +16,21 @@ export type GuidelineRow = {
 };
 
 type VerifiedSourceOption = { id: number; title: string };
+
+type GroupKey = PhaseType | "all";
+const GROUP_ORDER: GroupKey[] = ["all", ...PHASE_TYPES];
+const GROUP_LABELS: Record<GroupKey, string> = { all: "Semua Fase", ...PHASE_TYPE_LABELS };
+
+function groupByPhase(guidelines: GuidelineRow[]): Map<GroupKey, GuidelineRow[]> {
+  const groups = new Map<GroupKey, GuidelineRow[]>();
+  for (const guideline of guidelines) {
+    const key: GroupKey = guideline.applicable_phase_type ?? "all";
+    const list = groups.get(key) ?? [];
+    list.push(guideline);
+    groups.set(key, list);
+  }
+  return groups;
+}
 
 function inputClass(hasError: boolean) {
   return [
@@ -45,6 +61,56 @@ function Field({
   );
 }
 
+const CUSTOM_TOPIC_VALUE = "__custom__";
+
+function TopicField({
+  value,
+  onChange,
+  error,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+}) {
+  const isKnownTag = (GUIDELINE_TOPICS as readonly string[]).includes(value);
+  const [customMode, setCustomMode] = useState(value !== "" && !isKnownTag);
+
+  return (
+    <Field label="Topic Tag (opsional)" error={error}>
+      <select
+        value={customMode ? CUSTOM_TOPIC_VALUE : value}
+        onChange={(e) => {
+          if (e.target.value === CUSTOM_TOPIC_VALUE) {
+            setCustomMode(true);
+            onChange("");
+          } else {
+            setCustomMode(false);
+            onChange(e.target.value);
+          }
+        }}
+        className={inputClass(!!error)}
+      >
+        <option value="">-- Tanpa topik --</option>
+        {GUIDELINE_TOPICS.map((tag) => (
+          <option key={tag} value={tag}>
+            {GUIDELINE_TOPIC_LABELS[tag]}
+          </option>
+        ))}
+        <option value={CUSTOM_TOPIC_VALUE}>Lainnya (tulis sendiri)...</option>
+      </select>
+      {customMode && (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`mt-2 ${inputClass(!!error)}`}
+          placeholder="Tulis topic tag sendiri"
+        />
+      )}
+    </Field>
+  );
+}
+
 export default function TrainingGuidelinesPanel({
   sportId,
   verifiedSources,
@@ -56,6 +122,7 @@ export default function TrainingGuidelinesPanel({
 }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const grouped = groupByPhase(guidelines);
 
   return (
     <div className="space-y-4">
@@ -83,24 +150,36 @@ export default function TrainingGuidelinesPanel({
       {guidelines.length === 0 ? (
         <p className="text-sm text-zinc-500">Belum ada kaidah pelatihan.</p>
       ) : (
-        <ul className="space-y-3">
-          {guidelines.map((guideline) => (
-            <li
-              key={guideline.id}
-              className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
-            >
-              {editingId === guideline.id ? (
-                <EditGuidelineForm
-                  guideline={guideline}
-                  onDone={() => setEditingId(null)}
-                  onCancel={() => setEditingId(null)}
-                />
-              ) : (
-                <GuidelineCard guideline={guideline} onEdit={() => setEditingId(guideline.id)} />
-              )}
-            </li>
+        <div className="space-y-6">
+          {GROUP_ORDER.filter((key) => grouped.has(key)).map((key) => (
+            <div key={key}>
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                {GROUP_LABELS[key]} ({grouped.get(key)!.length})
+              </h4>
+              <ul className="space-y-3">
+                {grouped.get(key)!.map((guideline) => (
+                  <li
+                    key={guideline.id}
+                    className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+                  >
+                    {editingId === guideline.id ? (
+                      <EditGuidelineForm
+                        guideline={guideline}
+                        onDone={() => setEditingId(null)}
+                        onCancel={() => setEditingId(null)}
+                      />
+                    ) : (
+                      <GuidelineCard
+                        guideline={guideline}
+                        onEdit={() => setEditingId(guideline.id)}
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
@@ -137,19 +216,16 @@ function GuidelineCard({
     }
   }
 
+  const topicLabel = guidelineTopicLabel(guideline.topic);
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        {guideline.applicable_phase_type ? (
-          <span className="inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-            {PHASE_TYPE_LABELS[guideline.applicable_phase_type]}
-          </span>
-        ) : (
+        {topicLabel && (
           <span className="inline-block rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-            Semua Fase
+            {topicLabel}
           </span>
         )}
-        {guideline.topic && <span className="text-xs text-zinc-500">{guideline.topic}</span>}
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-700 dark:text-zinc-300">
         {guideline.guideline_text}
@@ -265,7 +341,7 @@ function AddGuidelineForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Berlaku untuk Fase (opsional)" error={errors.applicablePhaseType?.[0]}>
+        <Field label="Berlaku untuk Fase" error={errors.applicablePhaseType?.[0]}>
           <select
             value={form.applicablePhaseType}
             onChange={(e) => setForm((f) => ({ ...f, applicablePhaseType: e.target.value }))}
@@ -279,15 +355,11 @@ function AddGuidelineForm({
             ))}
           </select>
         </Field>
-        <Field label="Topik (opsional)" error={errors.topic?.[0]}>
-          <input
-            type="text"
-            value={form.topic}
-            onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))}
-            className={inputClass(!!errors.topic)}
-            placeholder="Contoh: load_progression"
-          />
-        </Field>
+        <TopicField
+          value={form.topic}
+          onChange={(topic) => setForm((f) => ({ ...f, topic }))}
+          error={errors.topic?.[0]}
+        />
       </div>
 
       <Field label="Kaidah (kata-kata Anda sendiri)" error={errors.guidelineText?.[0]}>
@@ -375,7 +447,7 @@ function EditGuidelineForm({
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Berlaku untuk Fase (opsional)" error={errors.applicablePhaseType?.[0]}>
+        <Field label="Berlaku untuk Fase" error={errors.applicablePhaseType?.[0]}>
           <select
             value={form.applicablePhaseType}
             onChange={(e) => setForm((f) => ({ ...f, applicablePhaseType: e.target.value }))}
@@ -389,14 +461,11 @@ function EditGuidelineForm({
             ))}
           </select>
         </Field>
-        <Field label="Topik (opsional)" error={errors.topic?.[0]}>
-          <input
-            type="text"
-            value={form.topic}
-            onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))}
-            className={inputClass(!!errors.topic)}
-          />
-        </Field>
+        <TopicField
+          value={form.topic}
+          onChange={(topic) => setForm((f) => ({ ...f, topic }))}
+          error={errors.topic?.[0]}
+        />
       </div>
 
       <Field label="Kaidah" error={errors.guidelineText?.[0]}>

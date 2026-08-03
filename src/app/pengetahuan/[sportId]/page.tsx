@@ -18,13 +18,14 @@ type SportDetail = {
 };
 
 const STATUS_LABELS: Record<SportDetail["knowledge_status"], string> = {
-  ready: "Siap",
+  ready: "Ready",
   under_construction: "Under Construction",
 };
 
+// Sesuai permintaan: abu-abu untuk Under Construction, hijau untuk Ready.
 const STATUS_CLASSES: Record<SportDetail["knowledge_status"], string> = {
   ready: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-  under_construction: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  under_construction: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
 export default async function KnowledgeBaseSportPage({

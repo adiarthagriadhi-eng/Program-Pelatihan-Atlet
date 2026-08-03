@@ -13,13 +13,14 @@ type SportRow = {
 };
 
 const STATUS_LABELS: Record<SportRow["knowledge_status"], string> = {
-  ready: "Siap",
+  ready: "Ready",
   under_construction: "Under Construction",
 };
 
+// Sesuai permintaan: abu-abu untuk Under Construction, hijau untuk Ready.
 const STATUS_CLASSES: Record<SportRow["knowledge_status"], string> = {
   ready: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-  under_construction: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+  under_construction: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
 };
 
 export default async function BasisPengetahuanPage() {
@@ -44,7 +45,7 @@ export default async function BasisPengetahuanPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-16">
+    <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-16">
       <Link
         href="/"
         className="mb-6 inline-block text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
@@ -53,11 +54,11 @@ export default async function BasisPengetahuanPage() {
       </Link>
 
       <h1 className="mb-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-        Basis Pengetahuan
+        Basis Pengetahuan per Cabor
       </h1>
       <p className="mb-8 text-sm text-zinc-500">
-        Sumber &amp; kaidah pelatihan terkurasi per cabang olahraga. Sistem hanya bisa mengusulkan
-        revisi program untuk cabor yang statusnya &quot;Siap&quot;.
+        Pilih cabang olahraga untuk kelola sumber &amp; kaidah pelatihan. Sistem hanya bisa
+        mengusulkan revisi program untuk cabor yang statusnya &quot;Ready&quot;.
       </p>
 
       {loadError && (
@@ -72,28 +73,49 @@ export default async function BasisPengetahuanPage() {
         </div>
       )}
 
-      <div className="space-y-3">
-        {sports.map((sport) => (
-          <Link
-            key={sport.id}
-            href={`/pengetahuan/${sport.id}`}
-            className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4 transition hover:border-blue-300 dark:border-zinc-800 dark:hover:border-blue-800"
-          >
-            <div>
-              <p className="font-medium text-zinc-900 dark:text-zinc-50">{sport.name}</p>
-              <p className="text-xs text-zinc-500">
-                {sport.verified_source_count} sumber terverifikasi &middot; {sport.guideline_count}{" "}
-                kaidah
-              </p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[sport.knowledge_status]}`}
-            >
-              {STATUS_LABELS[sport.knowledge_status]}
-            </span>
-          </Link>
-        ))}
-      </div>
+      {!loadError && sports.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+              <tr>
+                <th className="px-4 py-3 font-medium">Cabang Olahraga</th>
+                <th className="px-4 py-3 font-medium">Kategori</th>
+                <th className="px-4 py-3 font-medium">Sumber Terverifikasi</th>
+                <th className="px-4 py-3 font-medium">Kaidah</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {sports.map((sport) => (
+                <tr key={sport.id}>
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/pengetahuan/${sport.id}`}
+                      className="text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {sport.name}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{sport.category}</td>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    {sport.verified_source_count}
+                  </td>
+                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">
+                    {sport.guideline_count}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASSES[sport.knowledge_status]}`}
+                    >
+                      {STATUS_LABELS[sport.knowledge_status]}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </main>
   );
 }
