@@ -12,7 +12,7 @@ type ProposedChanges = {
   rationale: string;
 };
 
-type Citation = { finding_id: number; url: string | null; note: string | null };
+type Citation = { guideline_id: number; url: string | null; note: string | null };
 
 export type RevisionRow = {
   id: number;
@@ -155,7 +155,7 @@ export default function RevisionCard({ revision }: { revision: RevisionRow }) {
           </h3>
           <ul className="space-y-1 text-sm">
             {revision.source_citations.map((citation) => (
-              <li key={citation.finding_id}>
+              <li key={citation.guideline_id}>
                 {citation.url ? (
                   <a
                     href={citation.url}

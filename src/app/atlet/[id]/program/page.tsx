@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPool } from "@/lib/db";
 import ProgramForm from "@/components/program/ProgramForm";
 import PhaseTimeline, { type PhaseRow } from "@/components/program/PhaseTimeline";
+import RequestRevisionButton from "@/components/program/RequestRevisionButton";
 
 export const dynamic = "force-dynamic";
 
@@ -135,6 +136,10 @@ export default async function EditorProgramPage({
                 <span className="inline-block rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                   {STATUS_LABELS[program.status]}
                 </span>
+              </div>
+
+              <div className="mb-6">
+                <RequestRevisionButton programId={program.id} />
               </div>
 
               <h2 className="mb-3 text-sm font-medium text-zinc-700 dark:text-zinc-300">
