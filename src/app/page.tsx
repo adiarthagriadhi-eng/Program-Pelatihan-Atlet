@@ -47,14 +47,14 @@ export default function Home() {
           description="Audit reminder milestone yang sudah terkirim."
         />
         <MenuCard
-          href="/literature-scan"
-          title="Literature Scanner"
-          description="Cari temuan penelitian sport science terbaru & kredibel."
+          href="/pengetahuan"
+          title="Basis Pengetahuan"
+          description="Kelola sumber & kaidah pelatihan terverifikasi per cabang olahraga."
         />
         <MenuCard
           href="/revisi"
           title="Review Revisi"
-          description="Tinjau & setujui usulan perubahan program dari temuan literatur."
+          description="Tinjau & setujui usulan perubahan program pelatihan."
         />
       </div>
     </main>
