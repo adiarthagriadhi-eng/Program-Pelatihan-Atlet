@@ -62,7 +62,7 @@ Kembalikan HANYA JSON sesuai skema yang diminta.`;
  * menunggu Approve/Reject/Edit oleh pelatih di halaman Review Revisi.
  */
 export async function draftProposedChange(
-  finding: Pick<LiteratureFinding, "source_title" | "summary" | "caution_note">,
+  finding: Pick<LiteratureFinding, "source_title" | "summary">,
   phase: PhaseContext
 ): Promise<ProposedChange> {
   const client = getAnthropicClient();
@@ -78,9 +78,7 @@ export async function draftProposedChange(
     messages: [
       {
         role: "user",
-        content: `Temuan: "${finding.source_title}"\n\nRingkasan: ${finding.summary}\n\nCatatan kehati-hatian: ${
-          finding.caution_note ?? "tidak ada"
-        }`,
+        content: `Temuan: "${finding.source_title}"\n\nRingkasan: ${finding.summary}`,
       },
     ],
   });

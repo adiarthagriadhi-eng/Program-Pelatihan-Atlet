@@ -8,7 +8,6 @@ const literatureFindingSchema = z.object({
   source_url: z.string(),
   summary: z.string(),
   relevance_score: z.number().min(0).max(1),
-  caution_note: z.string().nullable(),
 });
 
 const literatureScanOutputSchema = z.object({
@@ -38,7 +37,8 @@ Aturan:
    ini berlaku ke konteks program yang diberikan (bukan skor popularitas
    sumber).
 4. Jika sampel penelitian kecil (n<30) atau desainnya lemah, catat itu
-   di summary sebagai catatan kehati-hatian, JANGAN sembunyikan.
+   DI DALAM summary sebagai catatan kehati-hatian (mis. "Catatan: n=18,
+   desain observasional"), JANGAN sembunyikan.
 5. Jika tidak ada temuan yang benar-benar relevan, kembalikan array
    kosong -- JANGAN memaksakan temuan yang tidak related.
 
@@ -51,9 +51,7 @@ ATURAN ANTI-HALUSINASI (WAJIB DIPATUHI):
    ingatan Anda meskipun Anda yakin sumber itu ada.
 8. Kalau web_search tidak tersedia, gagal, timeout, atau tidak
    mengembalikan hasil yang relevan, JANGAN mengarang temuan sebagai
-   gantinya -- kembalikan array findings KOSONG dan jelaskan situasinya
-   secara singkat lewat caution_note pada satu entri jika perlu, TANPA
-   source_url palsu.
+   gantinya -- kembalikan array findings KOSONG, TANPA source_url palsu.
 9. JANGAN pernah menulis catatan seperti "verifikasi manual diperlukan"
    atau "akses pencarian terbatas" sebagai pengganti pencarian nyata --
    itu tandanya Anda mengarang. Kalau pencarian tidak berhasil, kembalikan
@@ -66,9 +64,8 @@ Kembalikan HANYA dalam format JSON berikut, tanpa teks tambahan apapun:
     {
       "source_title": "...",
       "source_url": "...",
-      "summary": "... (2-3 kalimat, parafrase)",
-      "relevance_score": 0.00,
-      "caution_note": "... (isi jika ada keterbatasan studi, atau null)"
+      "summary": "... (2-3 kalimat, parafrase, sertakan catatan kehati-hatian di sini kalau ada)",
+      "relevance_score": 0.00
     }
   ]
 }`;

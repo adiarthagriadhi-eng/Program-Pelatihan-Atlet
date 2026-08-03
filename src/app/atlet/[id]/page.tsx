@@ -216,10 +216,6 @@ function ReadinessCard({ result }: { result: ReadinessResult | null }) {
       <p className="mb-3 text-xs opacity-80">Data tanggal {formatDate(result.date)}</p>
       <dl className="space-y-1 text-xs opacity-80">
         <div className="flex justify-between gap-4">
-          <dt>Kualitas tidur</dt>
-          <dd>{result.details.sleepQuality}</dd>
-        </div>
-        <div className="flex justify-between gap-4">
           <dt>Muscle soreness (mentah, sebelum dibalik)</dt>
           <dd>{result.details.muscleSoreness}</dd>
         </div>

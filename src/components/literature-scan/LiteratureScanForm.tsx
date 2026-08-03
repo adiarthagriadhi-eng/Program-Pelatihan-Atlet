@@ -9,7 +9,6 @@ type Finding = {
   source_url: string;
   summary: string;
   relevance_score: number;
-  caution_note: string | null;
 };
 
 export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }) {
@@ -160,11 +159,6 @@ export default function LiteratureScanForm({ athletes }: { athletes: Athlete[] }
               <p className="mt-2 text-xs text-zinc-500">
                 Relevance score: {finding.relevance_score.toFixed(2)}
               </p>
-              {finding.caution_note && (
-                <p className="mt-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                  ⚠ {finding.caution_note}
-                </p>
-              )}
             </div>
           ))}
         </div>

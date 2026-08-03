@@ -155,8 +155,8 @@ export async function POST(request: Request) {
       for (const finding of findings) {
         const { rows } = await client.query<{ id: number }>(
           `INSERT INTO literature_findings
-             (topic_tag, source_title, source_url, summary, relevance_score, caution_note)
-           VALUES ($1, $2, $3, $4, $5, $6)
+             (topic_tag, source_title, source_url, summary, relevance_score)
+           VALUES ($1, $2, $3, $4, $5)
            RETURNING id`,
           [
             topicTag,
@@ -164,7 +164,6 @@ export async function POST(request: Request) {
             finding.source_url,
             finding.summary,
             finding.relevance_score,
-            finding.caution_note,
           ]
         );
         findingsWithId.push({ ...finding, id: rows[0].id });

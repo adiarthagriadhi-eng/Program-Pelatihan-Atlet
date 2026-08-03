@@ -48,18 +48,6 @@ export const dailyAssessmentSchema = z.object({
     }
     return num;
   }),
-  sessionDurationMinutes: numericField("Durasi sesi wajib diisi").transform((val, ctx) => {
-    const num = Number(val);
-    if (!Number.isInteger(num)) {
-      ctx.addIssue({ code: "custom", message: "Durasi sesi harus berupa angka bulat (menit)" });
-      return z.NEVER;
-    }
-    if (num < 1 || num > 600) {
-      ctx.addIssue({ code: "custom", message: "Durasi sesi harus antara 1-600 menit" });
-      return z.NEVER;
-    }
-    return num;
-  }),
   sleepHours: numericField("Jam tidur wajib diisi").transform((val, ctx) => {
     const num = Number(val);
     if (Number.isNaN(num)) {
@@ -72,10 +60,6 @@ export const dailyAssessmentSchema = z.object({
     }
     return num;
   }),
-  sleepQuality: scaleField(
-    "Kualitas tidur wajib dipilih",
-    "Kualitas tidur harus antara 1-5"
-  ),
   wellnessScore: scaleField("Wellness score wajib dipilih", "Wellness score harus antara 1-5"),
   muscleSoreness: scaleField(
     "Muscle soreness wajib dipilih",

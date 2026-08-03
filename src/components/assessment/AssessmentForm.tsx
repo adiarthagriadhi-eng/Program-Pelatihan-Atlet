@@ -9,9 +9,7 @@ type FormState = {
   athleteId: string;
   assessmentDate: string;
   sessionRpe: string;
-  sessionDurationMinutes: string;
   sleepHours: string;
-  sleepQuality: string;
   wellnessScore: string;
   muscleSoreness: string;
   mood: string;
@@ -29,9 +27,7 @@ function emptyForm(athleteId = ""): FormState {
     athleteId,
     assessmentDate: todayISO(),
     sessionRpe: "",
-    sessionDurationMinutes: "",
     sleepHours: "",
-    sleepQuality: "",
     wellnessScore: "",
     muscleSoreness: "",
     mood: "",
@@ -64,15 +60,6 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
 
     if (!form.sessionRpe) next.sessionRpe = ["RPE sesi wajib diisi"];
 
-    if (!form.sessionDurationMinutes) {
-      next.sessionDurationMinutes = ["Durasi sesi wajib diisi"];
-    } else {
-      const value = Number(form.sessionDurationMinutes);
-      if (!Number.isInteger(value) || value < 1 || value > 600) {
-        next.sessionDurationMinutes = ["Durasi sesi harus angka bulat 1-600 menit"];
-      }
-    }
-
     if (!form.sleepHours) {
       next.sleepHours = ["Jam tidur wajib diisi"];
     } else {
@@ -82,7 +69,6 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
       }
     }
 
-    if (!form.sleepQuality) next.sleepQuality = ["Kualitas tidur wajib dipilih"];
     if (!form.wellnessScore) next.wellnessScore = ["Wellness score wajib dipilih"];
     if (!form.muscleSoreness) next.muscleSoreness = ["Muscle soreness wajib dipilih"];
     if (!form.mood) next.mood = ["Mood wajib dipilih"];
@@ -182,19 +168,6 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
         />
       </Field>
 
-      <Field label="Durasi Sesi (menit)" error={errors.sessionDurationMinutes?.[0]}>
-        <input
-          type="number"
-          inputMode="numeric"
-          step={5}
-          min={0}
-          value={form.sessionDurationMinutes}
-          onChange={(e) => setForm((f) => ({ ...f, sessionDurationMinutes: e.target.value }))}
-          className={inputClass(!!errors.sessionDurationMinutes)}
-          placeholder="Contoh: 90"
-        />
-      </Field>
-
       <Field label="Jam Tidur (malam sebelumnya)" error={errors.sleepHours?.[0]}>
         <input
           type="number"
@@ -206,15 +179,6 @@ export default function AssessmentForm({ athletes }: { athletes: Athlete[] }) {
           onChange={(e) => setForm((f) => ({ ...f, sleepHours: e.target.value }))}
           className={inputClass(!!errors.sleepHours)}
           placeholder="Contoh: 7.5"
-        />
-      </Field>
-
-      <Field label="Kualitas Tidur (1 = buruk, 5 = sangat baik)" error={errors.sleepQuality?.[0]}>
-        <ScalePicker
-          value={form.sleepQuality}
-          onChange={(value) => setForm((f) => ({ ...f, sleepQuality: value }))}
-          min={1}
-          max={5}
         />
       </Field>
 

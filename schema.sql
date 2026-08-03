@@ -15,7 +15,7 @@ CREATE TYPE revision_trigger AS ENUM ('auto_literature', 'auto_load_deviation', 
 CREATE TYPE revision_status AS ENUM ('pending_review', 'approved', 'rejected', 'edited_and_approved');
 CREATE TYPE reminder_channel AS ENUM ('email', 'whatsapp', 'push', 'sms');
 CREATE TYPE reminder_status AS ENUM ('scheduled', 'sent', 'failed');
-CREATE TYPE assessment_type AS ENUM ('session_rpe', 'session_duration', 'resting_hr', 'sleep_hours', 'sleep_quality', 'wellness_score', 'sport_specific_pr', 'hrv_optional', 'muscle_soreness', 'mood', 'stress');
+CREATE TYPE assessment_type AS ENUM ('session_rpe', 'resting_hr', 'sleep_hours', 'wellness_score', 'sport_specific_pr', 'hrv_optional', 'muscle_soreness', 'mood', 'stress');
 
 -- ---------- ENTITAS INTI ----------
 
@@ -125,7 +125,6 @@ CREATE TABLE literature_findings (
     source_url      TEXT,
     summary         TEXT,
     relevance_score NUMERIC(3,2),  -- 0.00 - 1.00
-    caution_note    TEXT,          -- catatan kehati-hatian (n kecil, desain lemah, dll)
     created_at      TIMESTAMPTZ DEFAULT now()
 );
 
@@ -198,8 +197,48 @@ JOIN training_programs p ON tp.program_id = p.id
 WHERE ts.actual_rpe IS NOT NULL AND ts.actual_duration_minutes IS NOT NULL;
 
 -- =====================================================================
+-- REVISI ARSITEKTUR: Basis Pengetahuan Statis (menggantikan Literature
+-- Scanner real-time, karena ditemukan risiko hallucination pada
+-- pencarian web live). Ditambahkan setelah evaluasi Tahap 5.
+-- =====================================================================
+
+CREATE TABLE knowledge_sources (
+    id              SERIAL PRIMARY KEY,
+    sport_id        INTEGER NOT NULL REFERENCES sports(id),
+    title           TEXT NOT NULL,
+    source_url      TEXT,
+    source_type     VARCHAR(20) NOT NULL, -- 'manual_upload' | 'assisted_search'
+    uploaded_content TEXT,
+    added_by        INTEGER REFERENCES coaches(id),
+    verified        BOOLEAN DEFAULT false,
+    verified_at     TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE training_guidelines (
+    id              SERIAL PRIMARY KEY,
+    sport_id        INTEGER NOT NULL REFERENCES sports(id),
+    source_id       INTEGER NOT NULL REFERENCES knowledge_sources(id),
+    applicable_phase_type phase_type,
+    topic           VARCHAR(150),
+    guideline_text  TEXT NOT NULL,
+    created_at      TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE sports ADD COLUMN knowledge_status VARCHAR(20) DEFAULT 'under_construction';
+
+CREATE INDEX idx_training_guidelines_sport_phase ON training_guidelines(sport_id, applicable_phase_type);
+CREATE INDEX idx_knowledge_sources_sport_verified ON knowledge_sources(sport_id) WHERE verified = true;
+
+-- =====================================================================
 -- SELESAI. Cara pakai:
---   psql -d nama_database -f schema.sql
--- Atau serahkan file ini ke Claude Code dengan instruksi:
---   "Jalankan schema.sql ini ke database [PostgreSQL/Supabase/dst] saya"
+--   psql -d nama_database -f schema.sql   (HANYA untuk database KOSONG/baru)
+--
+-- Untuk database yang SUDAH menjalankan versi schema.sql sebelumnya
+-- (sudah punya tabel-tabel di atas), JANGAN jalankan ulang file ini --
+-- akan gagal karena tipe/tabel sudah ada. Pakai file migrasi di
+-- migrations/002_static_knowledge_base_and_enum_cleanup.sql, yang
+-- mengubah database yang sudah berjalan supaya sesuai definisi ini
+-- (termasuk menghapus session_duration/sleep_quality dari
+-- assessment_type dan caution_note dari literature_findings).
 -- =====================================================================

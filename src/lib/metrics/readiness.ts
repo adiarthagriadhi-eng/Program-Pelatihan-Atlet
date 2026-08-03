@@ -1,6 +1,10 @@
 import { getPool } from "@/lib/db";
 
-const REQUIRED_TYPES = ["sleep_quality", "muscle_soreness", "mood", "stress"] as const;
+// 'sleep_quality' dihapus dari assessment_type saat migrasi ke Basis
+// Pengetahuan Statis (lihat migrations/002_...) -- tidak ada pengganti
+// metrik kualitas tidur subjektif di enum baru, jadi readiness sekarang
+// dihitung dari 3 metrik yang tersisa.
+const REQUIRED_TYPES = ["muscle_soreness", "mood", "stress"] as const;
 
 export type ReadinessZone = "aman" | "perhatian" | "risiko_tinggi";
 
@@ -19,7 +23,6 @@ export type ReadinessResult =
       date: string;
       score: number;
       details: {
-        sleepQuality: number;
         muscleSoreness: number;
         mood: number;
         stress: number;
@@ -39,10 +42,10 @@ function toDateKey(value: string | Date): string {
 }
 
 /**
- * Readiness score = rata-rata dari sleep_quality, muscle_soreness
- * (dibalik: 6 - nilai, karena skalanya 1=tidak nyeri .. 5=sangat nyeri),
- * mood, dan stress -- diambil dari hari terakhir yang punya keempat
- * metrik itu lengkap (bukan harus hari ini).
+ * Readiness score = rata-rata dari muscle_soreness (dibalik: 6 - nilai,
+ * karena skalanya 1=tidak nyeri .. 5=sangat nyeri), mood, dan stress --
+ * diambil dari hari terakhir yang punya ketiga metrik itu lengkap
+ * (bukan harus hari ini).
  */
 export async function calculateLatestReadiness(athleteId: number): Promise<ReadinessResult> {
   const { rows } = await getPool().query<{
@@ -54,7 +57,7 @@ export async function calculateLatestReadiness(athleteId: number): Promise<Readi
     SELECT assessment_date, type, value
     FROM assessments
     WHERE athlete_id = $1
-      AND type IN ('sleep_quality', 'muscle_soreness', 'mood', 'stress')
+      AND type IN ('muscle_soreness', 'mood', 'stress')
     ORDER BY assessment_date DESC
     `,
     [athleteId]
@@ -73,14 +76,13 @@ export async function calculateLatestReadiness(athleteId: number): Promise<Readi
     if (!hasAll) continue;
 
     const invertedSoreness = 6 - values.muscle_soreness;
-    const score = (values.sleep_quality + invertedSoreness + values.mood + values.stress) / 4;
+    const score = (invertedSoreness + values.mood + values.stress) / 3;
 
     return {
       status: "ok",
       date,
       score,
       details: {
-        sleepQuality: values.sleep_quality,
         muscleSoreness: values.muscle_soreness,
         mood: values.mood,
         stress: values.stress,

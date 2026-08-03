@@ -28,41 +28,29 @@ function zoneFor(acwr: number): AcwrZone {
 }
 
 /**
- * ACWR = rata-rata beban sesi (RPE x durasi menit) 7 hari terakhir dibagi
- * rata-rata beban sesi 28 hari terakhir. Beban sesi diambil dari tabel
- * `assessments` (type session_rpe & session_duration), bukan dari
- * training_sessions -- karena itulah tempat data ini masuk lewat halaman
- * "Input Assessment Harian".
+ * ACWR = rata-rata beban harian (jumlah actual_rpe x actual_duration_minutes
+ * semua sesi hari itu) 7 hari terakhir dibagi rata-rata beban harian 28
+ * hari terakhir. Beban diambil dari training_sessions lewat view
+ * v_athlete_session_load -- BUKAN lagi dari tabel `assessments`, karena
+ * assessment_type tidak lagi punya 'session_duration' sejak migrasi ke
+ * Basis Pengetahuan Statis (lihat migrations/002_...). Konsekuensinya:
+ * ACWR sekarang butuh training_sessions.actual_rpe & actual_duration_minutes
+ * terisi (dicatat per sesi terjadwal di Editor Program), bukan lagi dari
+ * Input Assessment Harian.
  */
 export async function calculateAcwr(athleteId: number): Promise<AcwrResult> {
   const { rows } = await getPool().query<{
     date: string;
-    rpe: string;
-    duration: string;
+    load: string;
   }>(
     `
-    WITH rpe_daily AS (
-      SELECT assessment_date, AVG(value) AS rpe
-      FROM assessments
-      WHERE athlete_id = $1
-        AND type = 'session_rpe'
-        AND assessment_date >= CURRENT_DATE - ($2 * INTERVAL '1 day')
-        AND assessment_date <= CURRENT_DATE
-      GROUP BY assessment_date
-    ),
-    duration_daily AS (
-      SELECT assessment_date, AVG(value) AS duration
-      FROM assessments
-      WHERE athlete_id = $1
-        AND type = 'session_duration'
-        AND assessment_date >= CURRENT_DATE - ($2 * INTERVAL '1 day')
-        AND assessment_date <= CURRENT_DATE
-      GROUP BY assessment_date
-    )
-    SELECT r.assessment_date AS date, r.rpe, d.duration
-    FROM rpe_daily r
-    JOIN duration_daily d ON d.assessment_date = r.assessment_date
-    ORDER BY r.assessment_date
+    SELECT session_date AS date, SUM(session_load) AS load
+    FROM v_athlete_session_load
+    WHERE athlete_id = $1
+      AND session_date >= CURRENT_DATE - ($2 * INTERVAL '1 day')
+      AND session_date <= CURRENT_DATE
+    GROUP BY session_date
+    ORDER BY session_date
     `,
     [athleteId, CHRONIC_WINDOW_DAYS - 1]
   );
@@ -80,7 +68,7 @@ export async function calculateAcwr(athleteId: number): Promise<AcwrResult> {
 
   const dailyLoads = rows.map((row) => ({
     date: new Date(row.date),
-    load: Number(row.rpe) * Number(row.duration),
+    load: Number(row.load),
   }));
 
   const chronicLoads = dailyLoads.map((d) => d.load);
