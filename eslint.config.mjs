@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Wrapper CommonJS untuk hosting Node.js Passenger (Hostinger dkk) --
+    // bukan bagian dari source app, lihat docs/deploy-hostinger.md.
+    "server.js",
   ]),
 ]);
 

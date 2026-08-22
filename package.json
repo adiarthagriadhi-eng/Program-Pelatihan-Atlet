@@ -6,8 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:hostinger": "node server.js",
     "lint": "eslint",
     "db:schema": "tsx scripts/run-schema.ts"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
