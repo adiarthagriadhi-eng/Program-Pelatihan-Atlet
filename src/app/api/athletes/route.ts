@@ -21,14 +21,38 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, sportId, birthDate, sex, trainingAgeYears } = parsed.data;
+  const {
+    name,
+    sportId,
+    birthDate,
+    sex,
+    trainingAgeYears,
+    weightKg,
+    heightCm,
+    bodyFatPercent,
+    disciplineCategory,
+    eventName,
+  } = parsed.data;
 
   try {
     const { rows } = await getPool().query<{ id: number; name: string }>(
-      `INSERT INTO athletes (name, sport_id, birth_date, sex, training_age_years)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO athletes
+         (name, sport_id, birth_date, sex, training_age_years,
+          weight_kg, height_cm, body_fat_percent, discipline_category, event_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id, name`,
-      [name, sportId, birthDate, sex, trainingAgeYears]
+      [
+        name,
+        sportId,
+        birthDate,
+        sex,
+        trainingAgeYears,
+        weightKg,
+        heightCm,
+        bodyFatPercent,
+        disciplineCategory,
+        eventName,
+      ]
     );
 
     return NextResponse.json({ status: "ok", athlete: rows[0] }, { status: 201 });

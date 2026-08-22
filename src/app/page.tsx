@@ -56,6 +56,11 @@ export default function Home() {
           title="Review Revisi"
           description="Tinjau & setujui usulan perubahan program pelatihan."
         />
+        <MenuCard
+          href="/export/nutrisi"
+          title="Export ke Nutrition Engine"
+          description="Ekspor profil & skema latihan mingguan atlet atletik/renang untuk aplikasi nutrisi."
+        />
       </div>
     </main>
   );

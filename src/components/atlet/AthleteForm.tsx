@@ -11,6 +11,11 @@ type FormState = {
   birthDate: string;
   sex: string;
   trainingAgeYears: string;
+  weightKg: string;
+  heightCm: string;
+  bodyFatPercent: string;
+  disciplineCategory: string;
+  eventName: string;
 };
 
 type FormErrors = Partial<Record<keyof FormState | "_form", string[]>>;
@@ -21,6 +26,11 @@ const emptyForm: FormState = {
   birthDate: "",
   sex: "",
   trainingAgeYears: "",
+  weightKg: "",
+  heightCm: "",
+  bodyFatPercent: "",
+  disciplineCategory: "",
+  eventName: "",
 };
 
 export default function AthleteForm({ sports }: { sports: Sport[] }) {
@@ -89,6 +99,11 @@ export default function AthleteForm({ sports }: { sports: Sport[] }) {
           birthDate: form.birthDate,
           sex: form.sex,
           trainingAgeYears: form.trainingAgeYears,
+          weightKg: form.weightKg,
+          heightCm: form.heightCm,
+          bodyFatPercent: form.bodyFatPercent,
+          disciplineCategory: form.disciplineCategory,
+          eventName: form.eventName,
         }),
       });
 
@@ -192,6 +207,75 @@ export default function AthleteForm({ sports }: { sports: Sport[] }) {
           placeholder="Contoh: 2.5"
         />
       </Field>
+
+      <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
+        <p className="mb-3 text-xs font-medium uppercase text-zinc-500">
+          Data Opsional (untuk Export Nutrisi)
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Berat Badan (kg)" error={errors.weightKg?.[0]}>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={form.weightKg}
+              onChange={(e) => setForm((f) => ({ ...f, weightKg: e.target.value }))}
+              className={inputClass(!!errors.weightKg)}
+              placeholder="Contoh: 68"
+            />
+          </Field>
+
+          <Field label="Tinggi Badan (cm)" error={errors.heightCm?.[0]}>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={form.heightCm}
+              onChange={(e) => setForm((f) => ({ ...f, heightCm: e.target.value }))}
+              className={inputClass(!!errors.heightCm)}
+              placeholder="Contoh: 178"
+            />
+          </Field>
+
+          <Field
+            label="Body Fat (%)"
+            error={errors.bodyFatPercent?.[0]}
+            hint="Kalau ada, dipakai untuk formula & guardrail nutrisi yang lebih akurat"
+          >
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              max="60"
+              value={form.bodyFatPercent}
+              onChange={(e) => setForm((f) => ({ ...f, bodyFatPercent: e.target.value }))}
+              className={inputClass(!!errors.bodyFatPercent)}
+              placeholder="Contoh: 10"
+            />
+          </Field>
+
+          <Field label="Kategori/Nomor" error={errors.disciplineCategory?.[0]}>
+            <input
+              type="text"
+              value={form.disciplineCategory}
+              onChange={(e) => setForm((f) => ({ ...f, disciplineCategory: e.target.value }))}
+              className={inputClass(!!errors.disciplineCategory)}
+              placeholder="Contoh: sprint, freestyle"
+            />
+          </Field>
+
+          <Field label="Event" error={errors.eventName?.[0]}>
+            <input
+              type="text"
+              value={form.eventName}
+              onChange={(e) => setForm((f) => ({ ...f, eventName: e.target.value }))}
+              className={inputClass(!!errors.eventName)}
+              placeholder="Contoh: Sprint 200m, Freestyle 100m"
+            />
+          </Field>
+        </div>
+      </div>
 
       <button
         type="submit"

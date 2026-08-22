@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mixintervalcoach/schemas/nutrition-export-v1.json",
+  "title": "AtletikPro Nutrition Export",
+  "description": "Struktur data ekspor dari aplikasi latihan (atletik & renang) ke Nutrition Engine. Format ini adalah KONTRAK -- field profile & weeklySessions[].* dirancang untuk cocok LANGSUNG dengan parameter computeDailyNutritionTargets(profile, dayContext) di modul nutrition-engine (lihat nutrition-engine/index.js, AthleteProfile & DayContext typedef).",
+  "type": "object",
+  "required": ["formatVersion", "exportedAt", "sourceApp", "athletes"],
+  "properties": {
+    "formatVersion": {
+      "type": "string",
+      "description": "Versi struktur ekspor ini. Naikkan (mis. \"1.1\", \"2.0\") kalau field ditambah/diubah, supaya sisi penerima (nutrition-engine atau aplikasi lain) bisa menyesuaikan parsing-nya.",
+      "const": "1.0"
+    },
+    "exportedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Waktu file ini dibuat (ISO 8601)."
+    },
+    "sourceApp": {
+      "type": "string",
+      "description": "Nama aplikasi sumber data, mis. \"AtletikPro\" atau \"AtletikPro - Renang\"."
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "WAJIB diisi jujur, bukan opsional kosmetik. Daftar keterbatasan data yang perlu diketahui sisi penerima -- mis. field yang belum terkumpul, atau nilai yang berupa estimasi bukan pengukuran langsung. Lihat contoh di export-examples/."
+    },
+    "athletes": {
+      "type": "array",
+      "description": "Satu entri per atlet yang diekspor. Boleh berisi campuran atlet atletik & renang dalam satu file yang sama.",
+      "items": { "$ref": "#/definitions/AthleteExport" }
+    }
+  },
+  "definitions": {
+    "AthleteExport": {
+      "type": "object",
+      "required": ["athleteName", "sport", "category", "phaseKey", "profile", "weeklySessions"],
+      "properties": {
+        "athleteName": {
+          "type": "string",
+          "description": "Nama atlet, untuk tampilan/pencocokan di sisi penerima -- BUKAN identitas unik/ID."
+        },
+        "athleteId": {
+          "type": ["string", "number", "null"],
+          "description": "OPSIONAL: ID atlet dari sistem sumber, kalau ada, untuk pencocokan/sinkronisasi data yang lebih presisi daripada sekadar nama."
+        },
+        "sport": {
+          "type": "string",
+          "enum": ["atletik", "renang"],
+          "description": "Cabang olahraga. Menentukan apakah penyesuaian termal air (Bab 2.3 benchmark ilmiah) diterapkan di nutrition-engine."
+        },
+        "category": {
+          "type": "string",
+          "description": "Kategori/nomor spesifik dalam format bebas, DISESUAIKAN sistem sumbernya masing-masing. Contoh atletik: \"sprint\", \"menengah\", \"jauh\", \"lompat\". Contoh renang: \"freestyle\", \"backstroke\", \"breaststroke\", \"butterfly\", \"medley\", atau \"sprint\"/\"middle\"/\"distance\" tergantung konvensi sistem Anda. Field ini TIDAK divalidasi ke daftar tetap secara sengaja -- nutrition-engine tidak bergantung padanya untuk perhitungan, hanya untuk konteks/pelaporan."
+        },
+        "event": {
+          "type": "string",
+          "description": "Nomor/jarak spesifik dalam format bebas, mis. \"200m\", \"1500m\", \"Lompat Tinggi\", \"Freestyle 100m\"."
+        },
+        "phaseKey": {
+          "type": "string",
+          "enum": ["umum", "khusus", "puncak", "transisi"],
+          "description": "Fase periodisasi latihan saat ini. Model 4-fase ini diasumsikan SAMA antara atletik & renang (Persiapan Umum -> Khusus -> Puncak -> Transisi) -- kalau sistem renang Anda memakai model periodisasi berbeda, petakan ke 4 fase ini semirip mungkin sebelum ekspor."
+        },
+        "phaseLabel": {
+          "type": ["string", "null"],
+          "description": "Label fase yang manusiawi/dapat dibaca, mis. \"Persiapan Khusus\". Opsional, hanya untuk tampilan."
+        },
+        "profile": { "$ref": "#/definitions/NutritionAthleteProfile" },
+        "weeklySessions": {
+          "type": "array",
+          "description": "Representasi skema latihan mingguan saat ini -- idealnya satu entri per sesi latihan dalam seminggu berjalan (bukan proyeksi 6 minggu ke depan; hanya kondisi SAAT INI yang relevan untuk target nutrisi harian).",
+          "items": { "$ref": "#/definitions/WeeklySessionExport" }
+        }
+      }
+    },
+
+    "NutritionAthleteProfile": {
+      "type": "object",
+      "description": "PERSIS mencerminkan AthleteProfile di nutrition-engine/index.js -- field & nama harus sama persis supaya bisa langsung dioper ke computeDailyNutritionTargets() tanpa transformasi tambahan.",
+      "required": ["sex", "age", "weightKg", "heightCm", "bodyFatPercent", "sport", "event"],
+      "properties": {
+        "sex": { "type": "string", "enum": ["L", "P"], "description": "L=laki-laki, P=perempuan." },
+        "age": { "type": ["number", "null"], "minimum": 5, "maximum": 100, "description": "Usia dalam tahun." },
+        "weightKg": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Berat badan (kg)." },
+        "heightCm": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Tinggi badan (cm)." },
+        "bodyFatPercent": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 60,
+          "description": "Persen lemak tubuh, 0-100 (null kalau tidak ada data). KRUSIAL: kalau terisi, nutrition-engine memakai formula Cunningham (lebih akurat untuk atlet, lihat Bab 2.1 benchmark ilmiah) DAN mengaktifkan guardrail keamanan REDs (Energy Availability). Kalau null, fallback ke Mifflin-St Jeor dengan peringatan, dan status REDs selalu 'unknown' -- bukan diam-diam dianggap aman."
+        },
+        "sport": { "type": "string", "enum": ["atletik", "renang"] },
+        "event": { "type": "string", "description": "Label event manusiawi, mis. \"Sprint 200m\" atau \"Freestyle 200m\"." }
+      }
+    },
+
+    "WeeklySessionExport": {
+      "type": "object",
+      "description": "Satu sesi latihan. Field trainingDurationMin/trainingIntensity/intensityPositionInPhase/isCarbLoading PERSIS mencerminkan DayContext di nutrition-engine/index.js.",
+      "required": ["day", "sessionName", "trainingDurationMin", "trainingIntensity", "intensityPositionInPhase", "isCarbLoading"],
+      "properties": {
+        "day": { "type": "string", "description": "Hari dalam minggu, mis. \"Senin\", atau tanggal spesifik jika sistem Anda melacaknya per kalender." },
+        "sessionName": { "type": "string", "description": "Nama sesi untuk konteks/pelaporan, mis. \"Long Interval\", \"Threshold\", \"Sprint Set 8x100m\"." },
+        "trainingDurationMin": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Estimasi/pengukuran total durasi sesi dalam menit, TERMASUK pemanasan & pendinginan."
+        },
+        "trainingDurationEstimatePrecise": {
+          "type": "boolean",
+          "description": "true kalau durasi dihitung dari data konkret (jarak/repetisi/waktu tercatat), false kalau memakai nilai default kasar karena skema sesi tidak menyimpan info waktu eksplisit. OPSIONAL tapi sangat disarankan untuk transparansi ke pengguna akhir."
+        },
+        "trainingIntensity": {
+          "type": "string",
+          "enum": ["low", "moderate", "high"],
+          "description": "Intensitas dominan sesi -- dipakai nutrition-engine untuk klasifikasi beban latihan (lihat carbohydrate.js, classifyTrainingLoad)."
+        },
+        "intensityPositionInPhase": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0-1: posisi hari ini dalam rentang beban/intensitas fase periodisasi saat ini (0=hari teringan dalam fase, 1=hari terberat). Dipakai menentukan target karbohidrat di ujung mana dari rentang kategorinya (prinsip \"Fuel for the Work Required\", lihat Bab 3.3 benchmark ilmiah)."
+        },
+        "isCarbLoading": {
+          "type": "boolean",
+          "description": "true kalau sesi ini berada dalam jendela 36-48 jam pra-kompetisi -- mengaktifkan mode target karbohidrat 10-12 g/kg (lihat carbohydrate.js, CARB_LOADING_*)."
+        },
+        "sourceRPE": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 10,
+          "description": "OPSIONAL: nilai RPE (skala Borg CR10) yang jadi dasar penentuan trainingIntensity, untuk transparansi/audit -- bukan dipakai langsung oleh nutrition-engine."
+        }
+      }
+    }
+  }
+}

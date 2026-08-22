@@ -17,6 +17,11 @@ type AthleteDetail = {
   sex: string | null;
   birth_date: string | null;
   training_age_years: string | null;
+  weight_kg: string | null;
+  height_cm: string | null;
+  body_fat_percent: string | null;
+  discipline_category: string | null;
+  event_name: string | null;
 };
 
 const ZONE_LABELS: Record<string, string> = {
@@ -80,7 +85,8 @@ export default async function ProfilAtletPage({
   try {
     const { rows } = await getPool().query<AthleteDetail>(
       `
-      SELECT a.id, a.name, s.name AS sport_name, a.sex, a.birth_date, a.training_age_years
+      SELECT a.id, a.name, s.name AS sport_name, a.sex, a.birth_date, a.training_age_years,
+             a.weight_kg, a.height_cm, a.body_fat_percent, a.discipline_category, a.event_name
       FROM athletes a
       JOIN sports s ON a.sport_id = s.id
       WHERE a.id = $1
@@ -124,10 +130,17 @@ export default async function ProfilAtletPage({
           <h1 className="mb-1 text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
             {athlete.name}
           </h1>
-          <p className="mb-4 text-sm text-zinc-500">
+          <p className="mb-1 text-sm text-zinc-500">
             {athlete.sport_name} &middot; {athlete.sex ?? "-"} &middot;{" "}
             {calculateAge(athlete.birth_date)} &middot; Training age{" "}
             {athlete.training_age_years ? `${athlete.training_age_years} th` : "-"}
+          </p>
+          <p className="mb-4 text-sm text-zinc-500">
+            {athlete.discipline_category ?? "Kategori belum diisi"}
+            {athlete.event_name ? ` · ${athlete.event_name}` : ""} &middot;{" "}
+            {athlete.weight_kg ? `${athlete.weight_kg} kg` : "Berat -"} &middot;{" "}
+            {athlete.height_cm ? `${athlete.height_cm} cm` : "Tinggi -"} &middot;{" "}
+            {athlete.body_fat_percent ? `${athlete.body_fat_percent}% BF` : "BF -"}
           </p>
 
           <Link

@@ -24,6 +24,7 @@ CREATE TABLE sports (
     name            VARCHAR(100) NOT NULL UNIQUE,
     category        sport_category NOT NULL,
     primary_energy_system VARCHAR(100),
+    nutrition_sport_key VARCHAR(10) CHECK (nutrition_sport_key IS NULL OR nutrition_sport_key IN ('atletik', 'renang')),  -- dipakai ekspor ke Nutrition Engine; NULL = cabang ini belum dipetakan/didukung
     created_at      TIMESTAMPTZ DEFAULT now()
 );
 
@@ -45,6 +46,11 @@ CREATE TABLE athletes (
     training_age_years NUMERIC(4,1),
     injury_history  JSONB DEFAULT '[]'::jsonb,  -- [{type, date, status, notes}]
     current_phase_id INTEGER,  -- FK ditambahkan setelah training_phases dibuat (lihat ALTER di bawah)
+    weight_kg       NUMERIC(5,2),
+    height_cm       NUMERIC(5,1),
+    body_fat_percent NUMERIC(4,1) CHECK (body_fat_percent IS NULL OR (body_fat_percent >= 0 AND body_fat_percent <= 60)),
+    discipline_category VARCHAR(100),  -- nomor/kategori spesifik, mis. "sprint", "freestyle" -- format bebas, untuk ekspor nutrisi
+    event_name      VARCHAR(150),      -- nomor/event spesifik, mis. "200m", "Freestyle 100m" -- untuk ekspor nutrisi
     created_at      TIMESTAMPTZ DEFAULT now(),
     updated_at      TIMESTAMPTZ DEFAULT now()
 );
@@ -229,6 +235,13 @@ ALTER TABLE sports ADD COLUMN knowledge_status VARCHAR(20) DEFAULT 'under_constr
 
 CREATE INDEX idx_training_guidelines_sport_phase ON training_guidelines(sport_id, applicable_phase_type);
 CREATE INDEX idx_knowledge_sources_sport_verified ON knowledge_sources(sport_id) WHERE verified = true;
+
+-- =====================================================================
+-- REVISI: Field ekspor nutrisi (integrasi Nutrition Engine eksternal).
+-- Untuk database yang sudah berjalan, lihat
+-- migrations/004_nutrition_export_fields.sql. Lihat src/lib/nutrition-export.ts
+-- untuk logika pemetaannya.
+-- =====================================================================
 
 -- =====================================================================
 -- SELESAI. Cara pakai:
